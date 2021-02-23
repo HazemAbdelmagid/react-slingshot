@@ -33,6 +33,9 @@ jobs:
           key: "npm_packages"
       - run: npm audit
       - run: npm audit fix
+      - run: 
+          command: echo "Hello Error!"
+          when: on_fail
 
 workflows:
   ci-pipeline:
