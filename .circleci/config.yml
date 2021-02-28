@@ -19,6 +19,7 @@ jobs:
             ls -la . ..
             printenv
             cat inventory.txt
+      - run: ansible all --list-hosts
       - run:
           name: "Running the playbook"
           command: 
