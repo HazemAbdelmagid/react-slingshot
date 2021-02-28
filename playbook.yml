@@ -1,6 +1,6 @@
 ---
 - name: "Setting Up Web Server on EC2 Instance"
-  hosts: all
+  hosts: ec2-54-205-189-169.compute-1.amazonaws.com
   user: ubuntu
   roles:
     - setup
