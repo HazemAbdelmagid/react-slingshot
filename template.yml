@@ -1,3 +1,4 @@
+#Create EC2 instance
 Resources:
   
   Ec2Instance:
