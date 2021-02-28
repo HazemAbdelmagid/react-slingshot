@@ -13,6 +13,12 @@ jobs:
           command: |
             apk add --update ansible
       - run:
+          name: Diags
+          command: |
+            pwd
+            ls -la . ..
+            printenv
+      - run:
           name: "Running the playbook"
           command: 
             ansible-playbook -i inventory.txt playbook.yml
