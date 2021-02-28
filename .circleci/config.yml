@@ -21,6 +21,7 @@ jobs:
       - run: mkdir /etc/ansible
       - run: echo "[web]" > /etc/ansible/hosts
       - run: echo "ec2-34-230-70-80.compute-1.amazonaws.com" >> /etc/ansible/hosts
+      - run: ssh-keyscan ec2-34-230-70-80.compute-1.amazonaws.com >> ~/.ssh/known_hosts
       - run: ansible all --list-hosts
       - run:
           name: "Running the playbook"
