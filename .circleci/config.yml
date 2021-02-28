@@ -18,7 +18,7 @@ jobs:
             pwd
             ls -la . ..
             printenv
-            cat /root/project/inventory.txt
+            cat inventory.txt
       - run:
           name: "Running the playbook"
           command: 
