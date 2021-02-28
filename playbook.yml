@@ -1,6 +1,6 @@
 ---
 - name: "Setting Up Web Server on EC2 Instance"
-  hosts: 54.205.189.169
+  hosts: all
   user: ubuntu
   roles:
     - setup

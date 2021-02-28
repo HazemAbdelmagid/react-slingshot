@@ -21,7 +21,7 @@ jobs:
       - run:
           name: "Running the playbook"
           command: 
-            ansible-playbook playbook.yml
+            ansible-playbook -i /root/project/inventory.txt playbook.yml
 
 workflows:
   cicdpipeline:
