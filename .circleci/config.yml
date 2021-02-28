@@ -3,15 +3,22 @@ version: 2.1
 jobs:
   create_infrastructure:
     docker:
-      - image: amazon/aws-cli
+        - image: amazon/aws-cli
+    working_directory: /root/project
     steps:
       - checkout
+      - run:
+          name: Diags
+          command: |
+            pwd
+            ls -la . ..
+            printenv
       - run:
           name: Ensure backend infrastructure exist
           command: |
             aws cloudformation deploy \
-              --template-file template.yml \
-              --stack-name my-stack
+            --template-file template.yml \
+            --stack-name my-stack
 workflows:
   my_workflow:
     jobs:
