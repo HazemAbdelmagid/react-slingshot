@@ -1,49 +1,76 @@
 version: 2.1
 
-defaults: &defaults
-  docker:
-    - image: circleci/node:13.8.0
-
 jobs:
-  build:
-    <<: *defaults
+  create_infrastructure:
+    docker:
+      - image: amazon/aws-cli
     steps:
-      - checkout
-      - run: npm i
-      - save_cache:
-          key: "npm_packages"
-          paths:
-            - /src/node_modules
-      - run: npm run lint
-
-  test:
-    <<: *defaults
-    steps:
-      - checkout
-      - restore_cache:
-          key: "npm_packages"
-      - run: npm i
-      - run: npm run test
-
-  analyze:
-    <<: *defaults
-    steps:
-      - checkout
-      - restore_cache:
-          key: "npm_packages"
-      - run: npm audit
-      #- run: npm audit fix
-      - run: 
-          command: echo "Hello Error!"
-          when: on_fail
+      - run: aws cloudformation --stack-name circle-ci-stack --region us-east-1 --template-body file://.circleci/template.yml
 
 workflows:
-  ci-pipeline:
+  cd_pipeline:
     jobs:
-      - build
-      - test:
-          requires:
-            - build
-      - analyze:
-          requires:
-            - test
+      - create_infrastructure
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# version: 2.1
+
+# defaults: &defaults
+#   docker:
+#     - image: circleci/node:13.8.0
+
+# jobs:
+#   build:
+#     <<: *defaults
+#     steps:
+#       - checkout
+#       - run: npm i
+#       - save_cache:
+#           key: "npm_packages"
+#           paths:
+#             - /src/node_modules
+#       - run: npm run lint
+
+#   test:
+#     <<: *defaults
+#     steps:
+#       - checkout
+#       - restore_cache:
+#           key: "npm_packages"
+#       - run: npm i
+#       - run: npm run test
+
+#   analyze:
+#     <<: *defaults
+#     steps:
+#       - checkout
+#       - restore_cache:
+#           key: "npm_packages"
+#       - run: npm audit
+#       #- run: npm audit fix
+#       - run: 
+#           command: echo "Hello Error!"
+#           when: on_fail
+
+# workflows:
+#   ci-pipeline:
+#     jobs:
+#       - build
+#       - test:
+#           requires:
+#             - build
+#       - analyze:
+#           requires:
+#             - test
