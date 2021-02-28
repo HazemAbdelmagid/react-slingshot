@@ -5,10 +5,15 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps:
-      - run: aws cloudformation deploy --stack-name circlecistack --template-file template.yml
-
+      - checkout
+      - run:
+          name: Ensure backend infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file template.yml \
+              --stack-name my-stack
 workflows:
-  cd_pipeline:
+  my_workflow:
     jobs:
       - create_infrastructure
 
