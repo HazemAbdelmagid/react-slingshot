@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps:
-      - run: aws cloudformation create-stack --stack-name circle-ci-stack --region us-east-1 --template-body template.yml
+      - run: aws cloudformation create-stack --stack-name circle_ci_stack --region us-east-1 --template-body template.yml
 
 workflows:
   cd_pipeline:
