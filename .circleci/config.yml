@@ -18,8 +18,8 @@ jobs:
             pwd
             ls -la . ..
             printenv
-      - run: sudo ls /etc/ansible
-      - run: sudo chmod 744 /etc/ansible/hosts
+      - run: ls /etc/ansible
+      - run: chmod 744 /etc/ansible/hosts
       - run: ansible all --list-hosts
       - run:
           name: "Running the playbook"
