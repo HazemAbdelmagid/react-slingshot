@@ -1,15 +1,6 @@
 #Create EC2 instance
 Resources:
-  
-  Ec2Instance:
-    Type: 'AWS::EC2::Instance'
-    Properties:
-      SecurityGroups: 
-        - !Ref InstanceSecurityGroup
-      SubnetId: subnet-064d8ff7893eac0fb
-      KeyName: Udacity
-      ImageId: 'ami-02fe94dee086c0c37'
-  
+
   InstanceSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
