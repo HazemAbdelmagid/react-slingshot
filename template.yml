@@ -1,12 +1,99 @@
-#Create EC2 instance
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >
+  This file will be used to create infrastructure [VPC, Public Subnet, Security Group, EC2 instance].
+
+# Parameters:
+#   EnvironmentName:
+#     Description: This is the Name for the Entire environment that we are going to deploy.
+#     Type: String
+#     Default: CICDPipelineInfra
+
+#   VpcCIDR: 
+#     Description: This is the CIDR Notation for our VPC.
+#     Type: String
+#     Default: 10.0.0.0/16
+
+#   PublicSubnetCIDR:
+#     Description: This is the CIDR Notation for the 1st Public Subnet in 1st AZ.
+#     Type: String
+#     Default: 10.0.0.0/24
+
+
 Resources:
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name 
+          Value: CICDPipelineInfra
+  
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: CICDPipelineInfra
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  PublicSubnet: 
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      CidrBlock: 10.0.0.0/16
+      MapPublicIpOnLaunch: true
+      Tags: 
+        - Key: Name 
+          Value: "CICDPipelineInfra Public Subnet (AZ1)"
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      VpcId: !Ref VPC
+      Tags: 
+        - Key: Name 
+          Value: "CICDPipelineInfra Public Routes"
+
+  DefaultPublicRoute: 
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties: 
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet
 
   InstanceSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: Enable SSH access via port 22
+      VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: '22'
           ToPort: '22'
           CidrIp: 0.0.0.0/0
+
+  Ec2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      ImageId: ami-02fe94dee086c0c37
+      InstanceType: t3.medium
+      SubnetId: !Ref PublicSubnet
+      SecurityGroupIds:
+      - Ref: InstanceSecurityGroup
+      KeyName: Udacity

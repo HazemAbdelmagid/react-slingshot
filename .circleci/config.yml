@@ -6,12 +6,12 @@ jobs:
         - image: amazon/aws-cli
     steps:
       - checkout
-      - run:
-          name: Diags
-          command: |
-            pwd
-            ls -la . ..
-            printenv
+      # - run:
+      #     name: Diags
+      #     command: |
+      #       pwd
+      #       ls -la . ..
+      #       printenv
       - run:
           name: Ensure backend infrastructure exist
           command: |
