@@ -19,6 +19,8 @@ jobs:
             ls -la . ..
             printenv
             cat inventory.txt
+      - run: sudo cat /etc/ansible/hosts
+      - run: sudo chmod 744 /etc/ansible/hosts
       - run: ansible all --list-hosts
       - run:
           name: "Running the playbook"
