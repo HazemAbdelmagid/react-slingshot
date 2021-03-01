@@ -11,9 +11,9 @@ jobs:
           command: |
             if [ `curl -s --head "https://www.google.com" | grep HTTP | cut -d " " -f 2` -eq 200 ]
             then
-              echo "it worked"
+              return 0
             else
-              echo "it failed"
+              return 1
             fi
       - run:
           command: echo "job failed"
