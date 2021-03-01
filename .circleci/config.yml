@@ -6,12 +6,10 @@ jobs:
       - image: alpine:latest
     steps:
       - run: apk --no-cache add curl
-      - run: X=`curl -s --head "https://www.google.com" | grep HTTP | cut -d " " -f 2`
-      - run: echo $X
       - run:
           name: "Smoke Testing"
           command: |
-            if [ $X -eq 200 ]
+            if [ `curl -s --head "https://www.google.com" | grep HTTP | cut -d " " -f 2` -eq 200 ]
             then
               echo "it worked"
             else
