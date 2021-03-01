@@ -1,38 +1,77 @@
 version: 2.1
 
 jobs:
-  configure_infrastructure:
+  smoke_test:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: alpine:latest
     steps:
-      - checkout
-      - add_ssh_keys:
-          fingerprints: ["93:12:14:b9:25:73:45:bc:b8:e3:8c:d4:47:26:f4:19"]
+      - run: apk --no-cache add curl
+      - run: export URL="https://www.google.com"
       - run:
-          name: "Insalling ansible"
+          name: "Smoke Testing"
           command: |
-            apk add --update ansible
+            if [ $X -eq "200" ]
+            then
+              echo "it worked"
+            else
+              echo "it failed"
+            fi
       - run:
-          name: Diags
-          command: |
-            pwd
-            ls -la . ..
-            printenv
-      - run: mkdir /etc/ansible
-      - run: echo "[web]" > /etc/ansible/hosts
-      - run: echo "ec2-34-230-70-80.compute-1.amazonaws.com" >> /etc/ansible/hosts
-      - run: apk update && apk add openssh
-      - run: ssh-keyscan ec2-34-230-70-80.compute-1.amazonaws.com >> ~/.ssh/known_hosts
-      - run: ansible all --list-hosts
-      - run:
-          name: "Running the playbook"
-          command: 
-            ansible-playbook playbook.yml
+          command: echo "job failed"
+          when: on_fail
 
 workflows:
-  cicdpipeline:
+  testing-pipeline:
     jobs:
-      - configure_infrastructure
+      - smoke_test
+
+
+
+
+
+
+
+
+
+
+
+
+
+# jobs:
+#   configure_infrastructure:
+#     docker:
+#       - image: python:3.7-alpine3.11
+#     steps:
+#       - checkout
+#       - add_ssh_keys:
+#           fingerprints: ["93:12:14:b9:25:73:45:bc:b8:e3:8c:d4:47:26:f4:19"]
+#       - run:
+#           name: "Insalling ansible"
+#           command: |
+#             apk add --update ansible
+#       - run:
+#           name: Diags
+#           command: |
+#             pwd
+#             ls -la . ..
+#             printenv
+#       # Creating ansible directory as it doesn't exist and adding the server to the hosts file.
+#       - run: mkdir /etc/ansible
+#       - run: echo "[web]" > /etc/ansible/hosts
+#       - run: echo "ec2-34-230-70-80.compute-1.amazonaws.com" >> /etc/ansible/hosts
+#       # Installing openssh on alpine docker container so we can use the keyscan to accpet the fingerprint.
+#       - run: apk update && apk add openssh
+#       - run: ssh-keyscan ec2-34-230-70-80.compute-1.amazonaws.com >> ~/.ssh/known_hosts
+#       - run: ansible all --list-hosts
+#       - run:
+#           name: "Running the playbook"
+#           command: 
+#             ansible-playbook playbook.yml
+
+# workflows:
+#   cicdpipeline:
+#     jobs:
+#       - configure_infrastructure
 
 
 
