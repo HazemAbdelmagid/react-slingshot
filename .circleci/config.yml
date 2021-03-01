@@ -6,7 +6,7 @@ jobs:
       - image: alpine:latest
     steps:
       - run: apk --no-cache add curl
-      - run: export URL="https://www.google.com"
+      - run: export X=`curl -s --head "https://www.google.com" | grep HTTP | cut -d " " -f 2`
       - run:
           name: "Smoke Testing"
           command: |
