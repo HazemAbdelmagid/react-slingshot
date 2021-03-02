@@ -1,33 +1,82 @@
 version: 2.1
 
-jobs:
-  smoke_test:
-    docker:
-      - image: alpine:latest
+images: &images
+  docker:
+    - image: amazon/aws-cli
+
+commands:
+  destroy_infrastructure:
     steps:
-      - run: apk --no-cache add curl
       - run:
-          name: "Smoke Testing"
+          name: destroy the green environment
           command: |
-            if [ `curl -s --head "https://www.google.com" | grep HTTP | cut -d " " -f 2` -eq 200 ]
-            then
-              return 0
-            else
-              return 1
-            fi
+            aws cloudformation delete-stack --stack-name Prod-${CIRCLE_WORKFLOW_ID}
+
+jobs:
+  create_infrastructure:
+    <<: *images
+    steps:
+      - checkout
       - run:
-          command: echo "job failed"
-          when: on_fail
+          name: Ensure backend infrastructure exist
+          command: |
+            aws cloudformation deploy \
+            --template-file template.yml \
+            --stack-name Prod-${CIRCLE_WORKFLOW_ID}
+  smoke_test:
+    <<: *images
+    steps:
+      - checkout
+      - run:
+          name: test failure from smoke testing
+          command: |
+            return 1
+      - destroy_infrastructure
+        when: on_fail
 
 workflows:
-  testing-pipeline:
+  destroy-testing:
     jobs:
-      - smoke_test
+      - create_infrastructur
+      - smoke_test:
+          requires:
+            - create_infrastructure
+
+
+
+  
+  # smoke_test:
+  #   docker:
+  #     - image: alpine:latest
+  #   steps:
+  #     - run: apk --no-cache add curl
+  #     - run:
+  #         name: "Smoke Testing"
+  #         command: |
+  #           if [ `curl -s --head "https://www.google.com" | grep HTTP | cut -d " " -f 2` -eq 200 ]
+  #           then
+  #             return 0
+  #           else
+  #             return 1
+  #           fi
+  #     - run:
+  #         command: echo "job failed"
+  #         when: on_fail
+
+# workflows:
+#   testing-pipeline:
+#     jobs:
+#       - smoke_test
 
 
 
 
-
+      # - run:
+      #     name: Diags
+      #     command: |
+      #       pwd
+      #       ls -la . ..
+      #       printenv
 
 
 
