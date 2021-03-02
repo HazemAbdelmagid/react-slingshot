@@ -4,8 +4,6 @@ jobs:
   create_cloudfront_webpage:
     docker:
       - image: amazon/aws-cli
-    environment:
-      S3_BUCKET_NAME: new-production-bucket-udacity
     steps:
       - checkout
       - run:
@@ -14,7 +12,7 @@ jobs:
             aws cloudformation deploy \
             --template-file cloudfront.yml \
             --stack-name production-distro \
-            --parameter-overrides ParameterKey=PipelineID,ParameterValue="${S3_BUCKET_NAME}" \ # Name of the S3 bucket you created manually.
+            --parameter-overrides PipelineID=new-production-bucket-udacity \ # Name of the S3 bucket you created manually.
             --tags project=udapeople &
 
 workflows:
