@@ -21,7 +21,7 @@ jobs:
             aws cloudformation deploy \
               --template-file template.yml \
               --stack-name prod-${CIRCLE_WORKFLOW_ID}
-      - run: return 0
+      - run: echo "Test"
       - destroy_environment
 
 workflows:
