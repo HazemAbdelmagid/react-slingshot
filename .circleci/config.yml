@@ -30,7 +30,7 @@ jobs:
 workflows:
   my_workflow:
     jobs:
-      - build
+      - create_infrastructure
 
 
 
