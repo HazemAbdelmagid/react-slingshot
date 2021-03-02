@@ -1,33 +1,62 @@
 version: 2.1
 
-commands:
-  destroy_environment:
-    steps:
-      - run:
-          name: Destroy environment
-          command: |
-            aws cloudformation delete-stack --stack-name prod-${CIRCLE_WORKFLOW_ID}
-          when: on_fail
-
 jobs:
-  create_infrastructure:
+  create_cloudfront_webpage:
     docker:
       - image: amazon/aws-cli
+    environment:
+      S3_BUCKET_NAME: new-production-bucket-udacity
     steps:
       - checkout
       - run:
-          name: Create Stack
+          name: create a cloudfront
           command: |
             aws cloudformation deploy \
-              --template-file template.yml \
-              --stack-name prod-${CIRCLE_WORKFLOW_ID}
-      - run: return 1
-      - destroy_environment
+            --template-file cloudfront.yml \
+            --stack-name production-distro \
+            --parameter-overrides PipelineID="${S3_BUCKET_NAME}" \ # Name of the S3 bucket you created manually.
+            --tags project=udapeople &
 
-workflows:
-  my_workflow:
-    jobs:
-      - create_infrastructure
+
+
+
+
+
+
+
+
+
+
+
+
+# commands:
+#   destroy_environment:
+#     steps:
+#       - run:
+#           name: Destroy environment
+#           command: |
+#             aws cloudformation delete-stack --stack-name prod-${CIRCLE_WORKFLOW_ID}
+#           when: on_fail
+
+# jobs:
+#   create_infrastructure:
+#     docker:
+#       - image: amazon/aws-cli
+#     steps:
+#       - checkout
+#       - run:
+#           name: Create Stack
+#           command: |
+#             aws cloudformation deploy \
+#               --template-file template.yml \
+#               --stack-name prod-${CIRCLE_WORKFLOW_ID}
+#       - run: return 1
+#       - destroy_environment
+
+# workflows:
+#   my_workflow:
+#     jobs:
+#       - create_infrastructure
 
 
 
