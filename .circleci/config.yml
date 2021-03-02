@@ -1,46 +1,84 @@
 version: 2.1
 
-images: &images
-  docker:
-    - image: amazon/aws-cli
-
 commands:
-  destroy_infrastructure:
+  destroy_environment:
     steps:
       - run:
-          name: destroy the green environment
+          name: Destroy environment
           command: |
-            aws cloudformation delete-stack --stack-name Prod-${CIRCLE_WORKFLOW_ID}
+            aws cloudformation delete-stack --stack-name prod-${CIRCLE_WORKFLOW_ID}
 
 jobs:
   create_infrastructure:
-    <<: *images
+    docker:
+      - image: amazon/aws-cli
     steps:
       - checkout
       - run:
-          name: Ensure backend infrastructure exist
+          name: Create Stack
           command: |
             aws cloudformation deploy \
-            --template-file template.yml \
-            --stack-name Prod-${CIRCLE_WORKFLOW_ID}
-  smoke_test:
-    <<: *images
-    steps:
-      - checkout
+              --template-file template.yml \
+              --stack-name prod-${CIRCLE_WORKFLOW_ID}
+      - run: return 1
       - run:
-          name: test failure from smoke testing
+          name: Destroy environment
           command: |
-            return 1
-      - destroy_infrastructure
-        when: on_fail
+            aws cloudformation delete-stack --stack-name prod-${CIRCLE_WORKFLOW_ID}
+          when: on_fail
 
 workflows:
-  destroy-testing:
+  my_workflow:
     jobs:
-      - create_infrastructur
-      - smoke_test:
-          requires:
-            - create_infrastructure
+      - build
+
+
+
+
+
+# version: 2.1
+
+# images: &images
+#   docker:
+#     - image: amazon/aws-cli
+
+# commands:
+#   destroy_infrastructure:
+#     steps:
+#       - run:
+#           name: destroy the green environment
+#           command: |
+#             aws cloudformation delete-stack --stack-name Prod-${CIRCLE_WORKFLOW_ID}
+
+# jobs:
+#   create_infrastructure:
+#     <<: *images
+#     steps:
+#       - checkout
+#       - run:
+#           name: Ensure backend infrastructure exist
+#           command: |
+#             aws cloudformation deploy \
+#             --template-file template.yml \
+#             --stack-name Prod-${CIRCLE_WORKFLOW_ID}
+#   smoke_test:
+#     <<: *images
+#     steps:
+#       - checkout
+#       - run:
+#           name: test failure from smoke testing
+#           command: |
+#             return 1
+#       - destroy_infrastructure
+#           when: on_fail
+
+# workflows:
+#   destroy-testing:
+#     jobs:
+#       - create_infrastructur
+#       - smoke_test:
+#           requires:
+#             - create_infrastructure
 
 
 
