@@ -17,6 +17,10 @@ jobs:
             --parameter-overrides PipelineID="${S3_BUCKET_NAME}" \ # Name of the S3 bucket you created manually.
             --tags project=udapeople &
 
+workflows:
+  pipeline_prod:
+    jobs:
+      - create_cloudfront_webpage
 
 
 
