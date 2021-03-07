@@ -1,278 +1,73 @@
 version: 2.1
 
 jobs:
-  create_cloudfront_webpage:
+  create_and_deploy_front_end:
     docker:
       - image: amazon/aws-cli
     steps:
       - checkout
       - run:
-          name: create a cloudfront
+          name: "Create a new production bucket using cloudformation template"
+          command: |
+            aws cloudformation deploy \
+            --template-file bucket.yml \ 
+            --stack-name "${CIRCLE_WORKFLOW_ID:0:7}" \
+            --parameter-overrides NAME="${CIRCLE_WORKFLOW_ID:0:7}"
+      #- run: aws s3 cp s3://new-production-bucket-udacity/index.html s3://mybucket/index.html
+
+  get_last_deployment_id:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: "Get the ID of the previous bucket"
+          command: |
+            aws cloudformation \
+            list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
+            --no-paginate --output text > ~/output.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - output.txt
+
+  promote_to_production:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: "Switch the new bucket to the existing CDN"
           command: |
             aws cloudformation deploy \
             --template-file cloudfront.yml \
             --stack-name production-distro \
-            --tags project=udapeople &
+            --parameter-overrides PipelineID="${CIRCLE_WORKFLOW_ID}"
+
+  clean_up_old_front_end:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/output.txt
+      - run:
+          name: "Delete the old bucket"
+          command: |
+            aws s3 rm "s3://${OldPipelineID}" --recursive
+            aws cloudformation delete-stack --stack-name "${PreviousPipelineID}"
+
 
 workflows:
-  pipeline_prod:
+  promote:
     jobs:
-      - create_cloudfront_webpage
-
-
-
-
-
-
-
-
-
-
-
-
-# commands:
-#   destroy_environment:
-#     steps:
-#       - run:
-#           name: Destroy environment
-#           command: |
-#             aws cloudformation delete-stack --stack-name prod-${CIRCLE_WORKFLOW_ID}
-#           when: on_fail
-
-# jobs:
-#   create_infrastructure:
-#     docker:
-#       - image: amazon/aws-cli
-#     steps:
-#       - checkout
-#       - run:
-#           name: Create Stack
-#           command: |
-#             aws cloudformation deploy \
-#               --template-file template.yml \
-#               --stack-name prod-${CIRCLE_WORKFLOW_ID}
-#       - run: return 1
-#       - destroy_environment
-
-# workflows:
-#   my_workflow:
-#     jobs:
-#       - create_infrastructure
-
-
-
-
-
-# version: 2.1
-
-# images: &images
-#   docker:
-#     - image: amazon/aws-cli
-
-# commands:
-#   destroy_infrastructure:
-#     steps:
-#       - run:
-#           name: destroy the green environment
-#           command: |
-#             aws cloudformation delete-stack --stack-name Prod-${CIRCLE_WORKFLOW_ID}
-
-# jobs:
-#   create_infrastructure:
-#     <<: *images
-#     steps:
-#       - checkout
-#       - run:
-#           name: Ensure backend infrastructure exist
-#           command: |
-#             aws cloudformation deploy \
-#             --template-file template.yml \
-#             --stack-name Prod-${CIRCLE_WORKFLOW_ID}
-#   smoke_test:
-#     <<: *images
-#     steps:
-#       - checkout
-#       - run:
-#           name: test failure from smoke testing
-#           command: |
-#             return 1
-#       - destroy_infrastructure
-#           when: on_fail
-
-# workflows:
-#   destroy-testing:
-#     jobs:
-#       - create_infrastructur
-#       - smoke_test:
-#           requires:
-#             - create_infrastructure
-
-
-
-  
-  # smoke_test:
-  #   docker:
-  #     - image: alpine:latest
-  #   steps:
-  #     - run: apk --no-cache add curl
-  #     - run:
-  #         name: "Smoke Testing"
-  #         command: |
-  #           if [ `curl -s --head "https://www.google.com" | grep HTTP | cut -d " " -f 2` -eq 200 ]
-  #           then
-  #             return 0
-  #           else
-  #             return 1
-  #           fi
-  #     - run:
-  #         command: echo "job failed"
-  #         when: on_fail
-
-# workflows:
-#   testing-pipeline:
-#     jobs:
-#       - smoke_test
-
-
-
-
-      # - run:
-      #     name: Diags
-      #     command: |
-      #       pwd
-      #       ls -la . ..
-      #       printenv
-
-
-
-
-
-
-
-
-# jobs:
-#   configure_infrastructure:
-#     docker:
-#       - image: python:3.7-alpine3.11
-#     steps:
-#       - checkout
-#       - add_ssh_keys:
-#           fingerprints: ["93:12:14:b9:25:73:45:bc:b8:e3:8c:d4:47:26:f4:19"]
-#       - run:
-#           name: "Insalling ansible"
-#           command: |
-#             apk add --update ansible
-#       - run:
-#           name: Diags
-#           command: |
-#             pwd
-#             ls -la . ..
-#             printenv
-#       # Creating ansible directory as it doesn't exist and adding the server to the hosts file.
-#       - run: mkdir /etc/ansible
-#       - run: echo "[web]" > /etc/ansible/hosts
-#       - run: echo "ec2-34-230-70-80.compute-1.amazonaws.com" >> /etc/ansible/hosts
-#       # Installing openssh on alpine docker container so we can use the keyscan to accpet the fingerprint.
-#       - run: apk update && apk add openssh
-#       - run: ssh-keyscan ec2-34-230-70-80.compute-1.amazonaws.com >> ~/.ssh/known_hosts
-#       - run: ansible all --list-hosts
-#       - run:
-#           name: "Running the playbook"
-#           command: 
-#             ansible-playbook playbook.yml
-
-# workflows:
-#   cicdpipeline:
-#     jobs:
-#       - configure_infrastructure
-
-
-
-
-
-
-# jobs:
-#   create_infrastructure:
-#     docker:
-#         - image: amazon/aws-cli
-#     steps:
-#       - checkout
-#       # - run:
-#       #     name: Diags
-#       #     command: |
-#       #       pwd
-#       #       ls -la . ..
-#       #       printenv
-#       - run:
-#           name: Ensure backend infrastructure exist
-#           command: |
-#             aws cloudformation deploy \
-#             --template-file template.yml \
-#             --stack-name my-stack
-# workflows:
-#   my_workflow:
-#     jobs:
-#       - create_infrastructure
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# version: 2.1
-
-# defaults: &defaults
-#   docker:
-#     - image: circleci/node:13.8.0
-
-# jobs:
-#   build:
-#     <<: *defaults
-#     steps:
-#       - checkout
-#       - run: npm i
-#       - save_cache:
-#           key: "npm_packages"
-#           paths:
-#             - /src/node_modules
-#       - run: npm run lint
-
-#   test:
-#     <<: *defaults
-#     steps:
-#       - checkout
-#       - restore_cache:
-#           key: "npm_packages"
-#       - run: npm i
-#       - run: npm run test
-
-#   analyze:
-#     <<: *defaults
-#     steps:
-#       - checkout
-#       - restore_cache:
-#           key: "npm_packages"
-#       - run: npm audit
-#       #- run: npm audit fix
-#       - run: 
-#           command: echo "Hello Error!"
-#           when: on_fail
-
-# workflows:
-#   ci-pipeline:
-#     jobs:
-#       - build
-#       - test:
-#           requires:
-#             - build
-#       - analyze:
-#           requires:
-#             - test
+      - create_and_deploy_front_end
+      - get_last_deployment_id:
+          requires:
+            - create_and_deploy_front_end
+      - promote_to_production:
+          requires:
+            - get_last_deployment_id
+      - clean_up_old_front_end:
+          requires:
+            - promote_to_production
